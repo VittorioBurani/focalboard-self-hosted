@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+
+  focalboard:
+    build:
+      context: ./focalboard-nginx
+      dockerfile: Dockerfile
+      args:
+        DB_NAME: ${DB_NAME:?err}
+        DB_USERNAME: ${DB_USERNAME:?err}
+        DB_PASSWORD: ${DB_PASSWORD:?err}
+    ports:
+      - ${SERVER_IP:?err}:${SERVER_PORT:?err}:80
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:${POSTGRES_VERSION:?err}-alpine
+    user: ${DB_USERNAME:?err}
+    environment:
+      POSTGRES_DB: ${DB_NAME:?err}
+      POSTGRES_USER: ${DB_USERNAME:?err}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?err}
+      POSTGRES_PORT: 5432
+    env_file:
+      - ./.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:
